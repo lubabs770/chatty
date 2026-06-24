@@ -1,4 +1,5 @@
-# Chatty
+# Chatty    <img width="48" height="48" alt="icon_1024" src="https://github.com/user-attachments/assets/ccf6ee7d-5793-4318-a016-c67151eec3ca" />
+
 
 A dead simple native macOS chat app for [Claude Code](https://claude.com/claude-code). It's a thin SwiftUI front-end over the `claude` CLI — your messages stream back token-by-token, conversations keep their context, and replies render as real markdown.
 No API key to manage: Chatty drives the `claude` binary you already have installed, so it uses your existing Claude Code auth.
