@@ -32,7 +32,7 @@ Then launch it from Spotlight or `open -a Chatty`.
 
 ### Requirements
 
-- macOS 13 (Ventura) or later, **Apple Silicon** (the release binary is arm64).
+- macOS 13 (Ventura) or later. The release is a **universal** binary (Apple Silicon + Intel).
 - [Claude Code](https://claude.com/claude-code) installed and authenticated — Chatty looks for `claude` at `~/.local/bin/claude`, `/opt/homebrew/bin/claude`, or `/usr/local/bin/claude`.
 
 > The app is **unsigned**. The installer strips the quarantine attribute for you. If you download the `.zip` from the Releases page by hand instead, run `xattr -dr com.apple.quarantine /Applications/Chatty.app` once.
@@ -46,7 +46,9 @@ cd chatty
 open Chatty.app
 ```
 
-For day-to-day hacking, `./make-app.sh && open Chatty.app`. Don't use `swift run` — a bare SPM binary launches as a background process and never takes keyboard focus; the `.app` bundle is what makes it a real, focusable app.
+For day-to-day hacking, `./make-app.sh && open Chatty.app`. Use `UNIVERSAL=1 ./make-app.sh` for a universal (arm64 + x86_64) build — this needs full Xcode, not just the Command Line Tools. Don't use `swift run` — a bare SPM binary launches as a background process and never takes keyboard focus; the `.app` bundle is what makes it a real, focusable app.
+
+Releases are built automatically: pushing a `v*` tag triggers [`.github/workflows/release.yml`](.github/workflows/release.yml), which builds the universal bundle on a macOS runner and publishes it to GitHub Releases.
 
 ## Configuration
 
