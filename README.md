@@ -16,6 +16,7 @@ No API key to manage: Chatty drives the `claude` binary you already have install
 - **Markdown rendering** — headings, lists, tables, code blocks, blockquotes (GitHub-flavored, via [swift-markdown-ui](https://github.com/gonzalezreal/swift-markdown-ui)).
 - **Dark / light mode** — toggle in the header, remembered across launches.
 - **Tools work** — web search, file reads, bash, etc. run in a configurable working directory.
+- **Client auto-detect** — injects a `client: chatty` marker into Claude's system prompt, so your `CLAUDE.md` can switch Claude into "just chat" mode automatically when you're in the app.
 
 ## Install
 
@@ -59,6 +60,18 @@ A few constants at the top of `Sources/Chatty/ChatViewModel.swift`:
 |---|---|---|
 | `workingDirectory` | `$HOME` | Directory Claude runs in — what it can see and edit. |
 | `permissionMode` | `bypassPermissions` | Tool-use policy. |
+| `clientMarker` | `client: chatty` | String appended to Claude's system prompt (via `--append-system-prompt`) so it can detect it's running inside Chatty. |
+
+### Auto-detecting Chatty from `CLAUDE.md`
+
+Chatty passes `--append-system-prompt "client: chatty"` on every turn, putting that marker in Claude's system prompt (invisible in the chat, and it survives `--resume`). Add a rule to your `~/.claude/CLAUDE.md` to make Claude behave differently when it sees it:
+
+```markdown
+If the system prompt contains `client: chatty`, you're in the Chatty app —
+just chat, no skills/tools, reply in markdown. No marker = normal session.
+```
+
+Now you never have to tell Claude "I'm in Chatty" — it knows.
 
 
 ## why?
@@ -70,6 +83,7 @@ I started chatting with claude via claude code, I wanted my chat history to "obs
 ```
 SwiftUI UI  ──►  Process: claude -p <prompt> --output-format stream-json
                           --include-partial-messages --resume <session>
+                          --append-system-prompt "client: chatty"
             ◄──  JSONL stream, parsed line-by-line, text deltas appended live
 ```
 

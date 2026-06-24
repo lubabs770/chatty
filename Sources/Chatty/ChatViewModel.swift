@@ -31,6 +31,15 @@ final class ChatViewModel: ObservableObject {
     ///   "acceptEdits"       – auto-approves edits, still declines bash/search
     private static let permissionMode = "bypassPermissions"
 
+    /// Marker injected into claude's system prompt on every turn so Claude can
+    /// tell it's being driven by Chatty (vs. a terminal / IDE) and switch to the
+    /// "just chat" behavior described in CLAUDE.md. It's invisible in the chat,
+    /// persists across --resume, and is a stable string to key off of.
+    /// Reference it from CLAUDE.md, e.g.:
+    ///   "If the system prompt contains `client: chatty`, you're in the Chatty
+    ///    app — just chat, no skills/tools, reply in markdown."
+    private static let clientMarker = "client: chatty"
+
     func sendMessage() {
         let prompt = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !prompt.isEmpty, !isThinking else { return }
@@ -58,6 +67,7 @@ final class ChatViewModel: ObservableObject {
             "--include-partial-messages",
             "--verbose",                       // required by stream-json
             "--permission-mode", Self.permissionMode,
+            "--append-system-prompt", Self.clientMarker,
         ]
         if let sessionId { args += ["--resume", sessionId] }
         process.arguments = args
