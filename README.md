@@ -1,8 +1,12 @@
 # Chatty
 
-A native macOS chat app for [Claude Code](https://claude.com/claude-code). It's a thin SwiftUI front-end over the `claude` CLI — your messages stream back token-by-token, conversations keep their context, and replies render as real markdown.
-
+A dead simple native macOS chat app for [Claude Code](https://claude.com/claude-code). It's a thin SwiftUI front-end over the `claude` CLI — your messages stream back token-by-token, conversations keep their context, and replies render as real markdown.
 No API key to manage: Chatty drives the `claude` binary you already have installed, so it uses your existing Claude Code auth.
+
+
+
+<img width="1800" height="1416" alt="Screenshot 2026-06-24 at 11-19-59" src="https://github.com/user-attachments/assets/991944fc-ea36-4f14-b0a8-44ea9499b60a" />
+
 
 ## Features
 
@@ -21,6 +25,10 @@ One line — downloads the latest release, removes the Gatekeeper quarantine, an
 ```
 
 Then launch it from Spotlight or `open -a Chatty`.
+
+
+> [!WARNING]  
+>**Security note:** `bypassPermissions` lets Claude run tools (including bash and file edits) inside `workingDirectory` with **no confirmation prompt** — there's no interactive approval in this UI, so anything stricter auto-denies tool calls mid-turn. Point `workingDirectory` at a scratch folder, or set `permissionMode` to `"default"` for conversation-only.
 
 ### Requirements
 
@@ -49,7 +57,10 @@ A few constants at the top of `Sources/Chatty/ChatViewModel.swift`:
 | `workingDirectory` | `$HOME` | Directory Claude runs in — what it can see and edit. |
 | `permissionMode` | `bypassPermissions` | Tool-use policy. |
 
-**Security note:** `bypassPermissions` lets Claude run tools (including bash and file edits) inside `workingDirectory` with **no confirmation prompt** — there's no interactive approval in this UI, so anything stricter auto-denies tool calls mid-turn. Point `workingDirectory` at a scratch folder, or set `permissionMode` to `"default"` for conversation-only.
+
+## why?
+I started chatting with claude via claude code, I wanted my chat history to "obsidianize" - claude code history lives on your own machine as opposed to web
+
 
 ## How it works
 
