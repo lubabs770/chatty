@@ -40,6 +40,17 @@ final class ChatViewModel: ObservableObject {
     ///    app — just chat, no skills/tools, reply in markdown."
     private static let clientMarker = "client: chatty"
 
+    /// The same "you are in Chatty" signal as `clientMarker`, but exported into
+    /// claude's *environment* rather than its system prompt.
+    ///
+    /// SessionStart hooks run before the system prompt is assembled, so they
+    /// never see `--append-system-prompt` and cannot detect Chatty from the
+    /// marker alone. A hook that needs to branch on the client — e.g. to load a
+    /// different set of instruction files — reads this variable instead.
+    /// Keep the value in sync with the suffix of `clientMarker`.
+    private static let clientEnvName = "CLAUDE_CLIENT"
+    private static let clientEnvValue = "chatty"
+
     func sendMessage() {
         let prompt = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !prompt.isEmpty, !isThinking else { return }
@@ -79,6 +90,9 @@ final class ChatViewModel: ObservableObject {
         // GUI apps launched outside a terminal get a bare PATH. Give claude a real one.
         var env = ProcessInfo.processInfo.environment
         env["PATH"] = "\(NSHomeDirectory())/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+
+        // Let hooks (which can't see --append-system-prompt) detect the client.
+        env[Self.clientEnvName] = Self.clientEnvValue
         process.environment = env
 
         let outPipe = Pipe()

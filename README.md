@@ -16,7 +16,7 @@ No API key to manage: Chatty drives the `claude` binary you already have install
 - **Markdown rendering** — headings, lists, tables, code blocks, blockquotes (GitHub-flavored, via [swift-markdown-ui](https://github.com/gonzalezreal/swift-markdown-ui)).
 - **Dark / light mode** — toggle in the header, remembered across launches.
 - **Tools work** — web search, file reads, bash, etc. run in a configurable working directory.
-- **Client auto-detect** — injects a `client: chatty` marker into Claude's system prompt, so your `CLAUDE.md` can switch Claude into "just chat" mode automatically when you're in the app.
+- **Client auto-detect** — injects a `client: chatty` marker into Claude's system prompt *and* exports `CLAUDE_CLIENT=chatty` into its environment, so both your `CLAUDE.md` and your hooks can switch Claude into "just chat" mode automatically when you're in the app.
 
 ## Install
 
@@ -61,6 +61,7 @@ A few constants at the top of `Sources/Chatty/ChatViewModel.swift`:
 | `workingDirectory` | `$HOME` | Directory Claude runs in — what it can see and edit. |
 | `permissionMode` | `bypassPermissions` | Tool-use policy. |
 | `clientMarker` | `client: chatty` | String appended to Claude's system prompt (via `--append-system-prompt`) so it can detect it's running inside Chatty. |
+| `clientEnvName` / `clientEnvValue` | `CLAUDE_CLIENT` / `chatty` | Environment variable exported to the `claude` process, so *hooks* can detect Chatty. Hooks can't see `--append-system-prompt`. |
 
 ### Auto-detecting Chatty from `CLAUDE.md`
 
@@ -73,6 +74,23 @@ just chat, no skills/tools, reply in markdown. No marker = normal session.
 
 Now you never have to tell Claude "I'm in Chatty" — it knows.
 
+#### Detecting Chatty from a hook
+
+The system-prompt marker is invisible to hooks: `SessionStart` fires before the
+system prompt is assembled, so `--append-system-prompt` hasn't been applied yet.
+Chatty therefore also exports `CLAUDE_CLIENT=chatty` into the `claude` process
+environment, which any hook can read:
+
+```sh
+#!/bin/sh
+# SessionStart hook: load chat-mode instructions only inside Chatty.
+[ "$CLAUDE_CLIENT" = "chatty" ] || exit 0
+echo "client: chatty — just chat, no skills/tools, reply in markdown."
+```
+
+Use the marker for instructions Claude reads, and the variable for logic a hook
+runs.
+
 
 ## why?
 I started chatting with claude via claude code, I wanted my chat history to "obsidianize" - claude code history lives on your own machine as opposed to web
@@ -84,6 +102,7 @@ I started chatting with claude via claude code, I wanted my chat history to "obs
 SwiftUI UI  ──►  Process: claude -p <prompt> --output-format stream-json
                           --include-partial-messages --resume <session>
                           --append-system-prompt "client: chatty"
+                          env: CLAUDE_CLIENT=chatty
             ◄──  JSONL stream, parsed line-by-line, text deltas appended live
 ```
 
